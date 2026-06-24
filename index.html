@@ -3,301 +3,155 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Leadly Inbox — InboxV2 + Connect Play demo</title>
+<title>Leadly Inbox — Today Queue (Connect Play) demo</title>
 <style>
-  :root{
-    --bg:#f6f7f9; --panel:#ffffff; --ink:#1b1d22; --muted:#6b7280; --line:#e7e8ec;
-    --brand:#6d28d9; --brand-2:#7c3aed; --brand-soft:#f3effe;
-    --pos:#16a34a; --warn:#d97706; --hot:#dc2626; --blue:#2563eb;
-    --chip:#f1f2f5;
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;height:100%}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
-  .app{display:flex;flex-direction:column;height:100vh}
-  /* top bar */
-  .topbar{height:52px;background:#17181c;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 18px;flex:0 0 auto}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:600}
-  .logo{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--brand-2),#a855f7);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
-  .topright{display:flex;align-items:center;gap:14px}
-  .pill{background:#26272e;color:#cbd0da;border-radius:999px;padding:5px 11px;font-size:12px}
-  .views{display:flex;gap:4px;background:#26272e;border-radius:8px;padding:3px}
-  .views button{background:transparent;border:0;color:#aeb3bd;padding:5px 12px;border-radius:6px;font-size:12.5px;cursor:pointer}
-  .views button.active{background:var(--brand);color:#fff}
-  /* layout */
-  .main{flex:1 1 auto;display:flex;min-height:0}
-  .col{display:flex;flex-direction:column;min-height:0;background:var(--panel)}
-  .leads{width:340px;border-right:1px solid var(--line);flex:0 0 auto}
-  .thread{flex:1 1 auto;border-right:1px solid var(--line);min-width:0}
-  .details{width:380px;flex:0 0 auto}
-  .colhead{height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-bottom:1px solid var(--line);font-weight:600;flex:0 0 auto}
-  .colhead .sub{font-weight:400;color:var(--muted);font-size:12px}
-  .scroll{overflow:auto;min-height:0;flex:1 1 auto}
-  /* lead row */
-  .lead{padding:11px 14px;border-bottom:1px solid var(--line);cursor:pointer;display:flex;flex-direction:column;gap:5px}
-  .lead:hover{background:#fafafb}
-  .lead.active{background:var(--brand-soft);box-shadow:inset 3px 0 0 var(--brand)}
-  .lead .r1{display:flex;align-items:center;justify-content:space-between;gap:8px}
-  .lead .nm{font-weight:600}
-  .lead .tm{color:var(--muted);font-size:12px;white-space:nowrap}
-  .lead .r2{color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .tag{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:999px;text-transform:lowercase}
-  .t-power{background:#fde8e8;color:#b91c1c}
-  .t-meeting{background:#e6f6ec;color:#15803d}
-  .t-pricing{background:#fff1e0;color:#b45309}
-  .t-information{background:#e8eefb;color:#1d4ed8}
-  .t-positive{background:#e6f6ec;color:#15803d}
-  .dots{display:flex;gap:4px;align-items:center;margin-top:2px}
-  .dot{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--line);background:#fff}
-  .dot.done{background:var(--brand);border-color:var(--brand)}
-  .dot.due{background:#fff;border-color:var(--hot);box-shadow:0 0 0 2px #fde2e2}
-  .dot.call{border-color:var(--brand)}
-  .chan{font-size:11px;color:var(--muted);margin-left:4px}
-  /* thread */
-  .threadwrap{padding:18px;display:flex;flex-direction:column;gap:14px}
-  .msg{max-width:78%;padding:10px 13px;border-radius:12px;line-height:1.45;font-size:13px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-  .msg .who{font-size:11px;color:var(--muted);margin-bottom:4px}
-  .in{align-self:flex-start;background:#f3f4f6;border-top-left-radius:3px}
-  .out{align-self:flex-end;background:var(--brand-soft);border-top-right-radius:3px}
-  .daysep{align-self:center;color:var(--muted);font-size:11px;background:#eef0f3;padding:3px 10px;border-radius:999px}
-  .composer{border-top:1px solid var(--line);padding:12px 16px;display:flex;gap:10px;align-items:center;flex:0 0 auto}
-  .composer input{flex:1;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13px;outline:none}
-  .btn{border:0;border-radius:9px;padding:9px 14px;font-weight:600;cursor:pointer;font-size:13px}
-  .btn.primary{background:var(--brand);color:#fff}
-  .btn.ghost{background:#f1f2f5;color:var(--ink)}
-  .btn.call{background:var(--pos);color:#fff}
-  /* details + call panel */
-  .section{padding:14px 16px;border-bottom:1px solid var(--line)}
-  .kv{display:flex;justify-content:space-between;gap:10px;padding:4px 0;font-size:13px}
-  .kv .k{color:var(--muted)}
-  .person{display:flex;gap:12px;align-items:center}
-  .avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#a855f7,#6366f1);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px}
-  .callpanel{background:#0f1014;color:#e7e8ee;border-radius:12px;margin:14px 16px;overflow:hidden}
-  .cp-head{padding:12px 14px;background:#17181f;display:flex;align-items:center;justify-content:space-between}
-  .cp-head .t{font-weight:700;display:flex;align-items:center;gap:8px}
-  .cp-body{padding:14px}
-  .cp-script{background:#1c1d26;border:1px solid #2a2b36;border-radius:9px;padding:12px;font-size:12.5px;line-height:1.55;color:#cfd2de;white-space:pre-wrap;max-height:190px;overflow:auto}
-  .cp-grounded{font-size:11px;color:#9aa0b4;margin:8px 2px 0;display:flex;align-items:center;gap:6px}
-  .cp-actions{display:flex;gap:8px;margin-top:12px}
-  .cp-actions .btn{flex:1}
-  .cp-fields{display:flex;gap:8px;margin-top:12px}
-  .cp-fields .f{flex:1;background:#1c1d26;border:1px solid #2a2b36;border-radius:8px;padding:8px 10px}
-  .cp-fields .f .l{font-size:10.5px;color:#8b90a3;text-transform:uppercase;letter-spacing:.04em}
-  .cp-fields .f .v{font-size:13px;margin-top:2px}
-  .badge{font-size:10.5px;background:#2a2b36;color:#c7cbdb;border-radius:999px;padding:2px 8px}
-  .empty{display:flex;height:100%;align-items:center;justify-content:center;color:var(--muted);padding:30px;text-align:center}
-  .note{font-size:11px;color:var(--muted);padding:10px 16px}
-  .sectitle{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px}
-  .demoflag{position:fixed;bottom:12px;right:14px;background:#17181c;color:#aeb3bd;font-size:11px;padding:6px 11px;border-radius:999px;opacity:.85}
+  :root{--bg:#fff;--ink:#1f2328;--muted:#656d76;--line:#d0d7de;--blue:#0969da;--blueb:#dbeafe;--red:#cf222e;--redb:#ffebe9;--green:#1a7f37;--greenb:#dafbe1;--grape:#8250df;--grapeb:#f3e8ff;--soft:#f6f8fa;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--soft);}
+  .topbar{height:52px;background:#24292f;color:#fff;display:flex;align-items:center;gap:12px;padding:0 18px;font-weight:600;font-size:15px;}
+  .topbar .dot{width:22px;height:22px;border-radius:6px;background:#8250df;display:inline-flex;align-items:center;justify-content:center;font-size:13px;}
+  .topbar .pill{margin-left:auto;background:#373e47;color:#adbac7;font-size:12px;font-weight:500;padding:3px 10px;border-radius:20px;}
+  .wrap{display:flex;height:calc(100vh - 52px);}
+  .col{overflow-y:auto;}
+  .queue{width:46%;border-right:1px solid var(--line);background:#fff;}
+  .detail{flex:1;background:#fff;}
+  .qhead{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;position:sticky;top:0;background:#fff;}
+  .qhead h1{font-size:16px;margin:0;}
+  .badge{font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;}
+  .b-red{background:var(--redb);color:var(--red);}
+  .b-blue{background:var(--blueb);color:var(--blue);}
+  .b-grape{background:var(--grapeb);color:var(--grape);}
+  .b-gray{background:#eaeef2;color:#656d76;}
+  .b-green{background:var(--greenb);color:var(--green);}
+  .section{padding:8px 18px 4px;}
+  .section .lbl{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin:10px 0 6px;}
+  .row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #eaeef2;border-radius:8px;margin-bottom:7px;cursor:pointer;transition:.12s;}
+  .row:hover{background:var(--soft);border-color:var(--line);}
+  .row.sel{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue);}
+  .row .nm{font-weight:600;font-size:14px;}
+  .row .sub{font-size:12px;color:var(--muted);}
+  .row .grow{flex:1;min-width:0;}
+  .tag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;border:1px solid var(--line);color:var(--muted);white-space:nowrap;}
+  .when{font-size:12px;font-weight:600;}
+  .empty{color:var(--muted);font-size:13px;text-align:center;padding:40px 10px;}
+  /* detail */
+  .dhead{padding:16px 22px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;}
+  .dhead .nm{font-size:18px;font-weight:700;}
+  .dhead .sub{color:var(--muted);font-size:13px;margin-top:2px;}
+  .callbar{margin:18px 22px;border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  .cb-top{background:var(--soft);padding:10px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);font-size:13px;}
+  .cb-body{padding:16px;}
+  .phone{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .phone .num{font-size:17px;font-weight:700;}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 16px;font-size:14px;font-weight:600;cursor:pointer;}
+  .btn-call{background:var(--blue);color:#fff;border-color:var(--blue);margin-left:auto;}
+  .btn-call:hover{background:#0860ca;}
+  .script{background:var(--soft);border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.55;margin-bottom:14px;}
+  .script .k{font-size:11px;color:var(--muted);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px;}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:6px;}
+  .chip{font-size:12px;font-weight:600;padding:6px 11px;border-radius:7px;border:1px solid var(--line);background:#fff;cursor:pointer;}
+  .chip:hover{background:var(--soft);}
+  .chip.booked{background:var(--greenb);color:var(--green);border-color:#a7e3b8;}
+  .chip.dnc{background:var(--redb);color:var(--red);border-color:#ffc1bc;}
+  .track{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px;margin-top:4px;}
+  .dots{display:flex;gap:4px;}
+  .dots i{width:8px;height:8px;border-radius:50%;background:#d0d7de;display:inline-block;}
+  .dots i.on{background:var(--blue);}
+  .ls{display:flex;align-items:center;gap:8px;background:var(--soft);border:1px dashed var(--line);border-radius:8px;padding:9px 13px;font-size:13px;color:var(--muted);margin:0 22px 18px;}
+  .ls.unlocked{background:var(--greenb);border-color:#a7e3b8;color:var(--green);border-style:solid;}
+  .log{margin:0 22px 24px;}
+  .log .t{font-size:13px;font-weight:600;margin-bottom:6px;}
+  .log .item{font-size:12px;color:var(--muted);padding:5px 0;border-top:1px solid #eaeef2;}
+  .placeholder{color:var(--muted);font-size:14px;text-align:center;padding:80px 20px;}
+  .footer{font-size:11px;color:var(--muted);text-align:center;padding:10px;}
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="topbar">
-    <div class="brand"><div class="logo">L</div> Leadly Inbox <span class="pill" style="margin-left:6px">InboxV2</span></div>
-    <div class="topright">
-      <div class="views">
-        <button class="active">Today</button>
-        <button>Cards</button>
-        <button>Spreadsheet</button>
-      </div>
-      <span class="pill">demo · Connect Play</span>
-    </div>
+<div class="topbar"><span class="dot">L</span> Leadly Inbox <span class="pill">demo · Connect Play</span></div>
+<div class="wrap">
+  <div class="col queue">
+    <div class="qhead"><h1>Today</h1><span class="badge b-red" id="dueCount">0 due</span><span style="margin-left:auto;font-size:11px;color:var(--muted)">live demo · mock data</span></div>
+    <div id="queue"></div>
   </div>
-
-  <div class="main">
-    <!-- LEADS LIST -->
-    <div class="col leads">
-      <div class="colhead">Today <span class="sub" id="leadcount">5 due</span></div>
-      <div class="scroll" id="leadlist"></div>
-      <div class="note">Connect Play layers call + multichannel follow-up over every positive reply. Touchpoint dots show the cadence; red = due now.</div>
-    </div>
-
-    <!-- EMAIL THREAD -->
-    <div class="col thread">
-      <div class="colhead" id="threadhead">Conversation <span class="sub" id="threadsub"></span></div>
-      <div class="scroll"><div class="threadwrap" id="threadwrap"></div></div>
-      <div class="composer">
-        <button class="btn ghost" onclick="alert('Draft generated by the follow-up engine (demo)')">✨ Draft</button>
-        <input id="composer" placeholder="Type a reply… (demo)" />
-        <button class="btn primary" onclick="alert('Send is disabled in the demo')">Send</button>
-      </div>
-    </div>
-
-    <!-- LEAD DETAILS + CALL PANEL -->
-    <div class="col details">
-      <div class="colhead">Lead details</div>
-      <div class="scroll" id="details"></div>
-    </div>
+  <div class="col detail" id="detail">
+    <div class="placeholder">Pick a lead from the queue to open the Call Bar.</div>
   </div>
 </div>
-<div class="demoflag">static demo · mock data · not connected to a backend</div>
-
+<div class="footer">Self-contained demo of the Today task queue. No backend — sample data only.</div>
 <script>
-const leads = [
-  {
-    id:1, name:"Ron Williams", company:"Fort Wayne Neuro", title:"Practice Owner",
-    cat:"power", due:"now", channel:"Call", touch:1, phone:"+1 (260) 555-0142", email:"ron@ftwneuro.com",
-    dots:["done","due","call","plan","plan"],
-    summary:"Replied to the InboxV2 proof email asking how fast we can stand up the queue. High intent. Owner, decision-maker.",
-    thread:[
-      {day:"Tue"},
-      {dir:"out", who:"You · Grace (E1)", text:"Ron — quick one. We just shipped a call + follow-up layer over the inbox so your team never loses a positive reply. Worth 10 min?"},
-      {dir:"in", who:"Ron Williams", text:"Yeah this is timely. How fast can you get it live for us?"},
-      {day:"now"},
-      {dir:"in", who:"Ron Williams", text:"Call me when you can, mornings are best."}
-    ],
-    script:`Hey Ron, it's Grace from Leadly — you said mornings are good, catching you at a decent time?\n\n(reason for call)\nYou replied to the inbox proof asking how fast we can get this live. Short answer: the queue is on day one, the backend due-touch job follows within the week.\n\n(value, grounded in their reply)\nThe piece you reacted to — never losing a positive reply — that's the Connect Play. Every yes turns into a call + text + email cadence and surfaces right here.\n\n(close)\nCan I book 20 minutes Thursday to walk your team through it?`,
-    cta:"Call now", temp:"hot", callbackAt:""
-  },
-  {
-    id:2, name:"Kristen Boice", company:"Pathways to Healing", title:"Founder, Group Practice",
-    cat:"meeting", due:"4m", channel:"Call", touch:2, phone:"+1 (317) 555-0198", email:"kristen@pathwaystohealing.com",
-    dots:["done","done","due","call","plan"],
-    summary:"Touch 2. Booked-curious — wants to see the call script feature before committing to a demo. Warm.",
-    thread:[
-      {day:"Mon"},
-      {dir:"out", who:"You · Grace (E1)", text:"Kristen, congrats on the third location. The follow-up cadence we run would fit your intake flow well."},
-      {dir:"in", who:"Kristen Boice", text:"Interested. Does it actually give my front desk a script, or just reminders?"},
-      {day:"today"},
-      {dir:"out", who:"You · Grace (E2)", text:"Real Gong-grounded scripts per lead. I'll call and show you — what's a good time?"},
-      {dir:"in", who:"Kristen Boice", text:"Try me early afternoon."}
-    ],
-    script:`Hi Kristen, Grace from Leadly — you asked whether this gives your front desk a real script or just reminders.\n\n(answer)\nReal scripts. Each call card pulls the lead's history and a Gong-grounded talk track — like the one I'm reading from now.\n\n(value)\nFor a three-location intake flow, that means whoever picks up the phone sounds like your best closer.\n\n(close)\nWant me to set the team up on a 25-minute walkthrough this week?`,
-    cta:"Call now", temp:"warm", callbackAt:""
-  },
-  {
-    id:3, name:"Kyra Contreras", company:"Salt Counseling", title:"Owner",
-    cat:"pricing", due:"now", channel:"Approve draft", touch:0, phone:"+1 (801) 555-0173", email:"kyra@saltcounseling.com",
-    dots:["done","due","plan","plan","plan"],
-    summary:"Proof email (E2) from Grace is drafted and waiting for your approval before it sends. Pricing-stage reply.",
-    thread:[
-      {day:"Wed"},
-      {dir:"in", who:"Kyra Contreras", text:"What does this run monthly? Trying to budget for Q3."},
-      {day:"now"},
-      {dir:"out", who:"Draft · Grace (E2) — awaiting approval", text:"Kyra — pricing scales with seats; for a practice your size it lands well under what one missed booking costs. Want the one-pager + a quick call?"}
-    ],
-    script:`Hi Kyra, Grace from Leadly — you asked about monthly pricing for Q3 budgeting.\n\n(frame)\nIt scales by seats, and for a practice your size it comes in under the cost of a single missed booking each month.\n\n(value)\nThe whole point of the Connect Play is that you stop losing those bookings in the first place.\n\n(close)\nI'll send the one-pager now — can I grab 15 minutes to tailor the numbers to your seat count?`,
-    cta:"Approve & send", temp:"warm", callbackAt:""
-  },
-  {
-    id:4, name:"Travis Hatch", company:"Hatch Fulfillment", title:"CEO",
-    cat:"information", due:"12m", channel:"Text", touch:1, phone:"+1 (385) 555-0120", email:"travis@hatchfulfillment.com",
-    dots:["done","due","plan","plan","plan"],
-    summary:"Texting touch from Mike. Asked for the case study on manufacturing + fulfillment overlap. Info-stage.",
-    thread:[
-      {day:"today"},
-      {dir:"out", who:"You · Mike (text)", text:"Travis — sending the 3PL + manufacturing overlap case study. Want me to call and walk you through the numbers?"},
-      {dir:"in", who:"Travis Hatch", text:"Send it over, then yeah a quick call works."}
-    ],
-    script:`Hey Travis, Mike from Leadly — you asked for the manufacturing + fulfillment overlap case study, just texted it over.\n\n(reason for call)\nWanted to walk you through the two numbers that matter for Hatch specifically.\n\n(value)\nThe overlap is exactly where your outbound is leaking — the cadence plugs it.\n\n(close)\nYou free for 15 minutes tomorrow morning?`,
-    cta:"Call now", temp:"warm", callbackAt:""
-  },
-  {
-    id:5, name:"Devyn Gillespie", company:"3PL Bridge", title:"VP Sales",
-    cat:"power", due:"4:30pm", channel:"Scheduled call", touch:3, phone:"+1 (206) 555-0155", email:"devyn@3plbridge.com",
-    dots:["done","done","done","due","plan"],
-    summary:"Callback scheduled for 4:30pm today. Power lead, touch 3 — ready to talk rollout.",
-    thread:[
-      {day:"Mon"},
-      {dir:"in", who:"Devyn Gillespie", text:"We're evaluating two tools. Call me Wednesday afternoon and make your case."},
-      {day:"today"},
-      {dir:"out", who:"You · Grace", text:"Locked in for 4:30 today. I'll come ready with the rollout plan."}
-    ],
-    script:`Hi Devyn, Grace from Leadly at our 4:30 — you said you're between two tools and asked me to make the case.\n\n(case)\nThe difference is what happens after the reply. We don't just log it, we run the call + multichannel cadence so nothing stalls.\n\n(proof)\nThat's the queue you'd be looking at every morning — calls, callbacks, and approvals in one place.\n\n(close)\nIf the rollout plan looks right, can we target a start date before month-end?`,
-    cta:"Start scheduled call", temp:"hot", callbackAt:"4:30pm"
-  }
+const OPENER = (l)=>`"Hi ${l.first}, it's Mike with ${l.client} — I work alongside ${l.persona}, who you've been emailing about ${l.topic}. I run the calls on our side, so I figured I'd catch you live. Got two minutes?"`;
+let leads = [
+  {id:1, bucket:'call', cat:'power', first:'Ron', name:'Ron Williams', co:'Fort Wayne Neuro', client:'Aries', persona:'Sarah', topic:'shipper outreach', phone:'+1 260 420 5337', role:'Call', when:'now', touch:1},
+  {id:2, bucket:'call', cat:'meeting-ready', first:'Kristen', name:'Kristen Boice', co:'Pathways to Healing', client:'BTL', persona:'Grace', topic:'the showcase', phone:'+1 317 316 3077', role:'Call · touch 2', when:'4m', touch:2},
+  {id:3, bucket:'approve', cat:'pricing', first:'Kyra', name:'Kyra Contreras', co:'Salt Counseling', client:'BTL', persona:'Grace', topic:'pricing', phone:'+1 317 500 4539', role:'Proof email (E2) — from Grace', when:'now', touch:3},
+  {id:4, bucket:'approve', cat:'information', first:'Travis', name:'Travis Hatch', co:'Hatch Fulfillment', client:'Hatch', persona:'Sarah', topic:'fulfillment', phone:'+1 801 555 0142', role:'Text — from Mike', when:'12m', touch:2},
+  {id:5, bucket:'callback', cat:'power', first:'Devyn', name:'Devyn Gillespie', co:'3PL Bridge', client:'Aries', persona:'Sarah', topic:'outbound', phone:'+1 602 555 0199', role:'Scheduled call', when:'4:30pm', touch:1},
 ];
-
-const catClass = {power:"t-power", meeting:"t-meeting", pricing:"t-pricing", information:"t-information", positive:"t-positive"};
-const catLabel = {power:"power", meeting:"meeting ready", pricing:"pricing", information:"information", positive:"positive"};
-
-function dotsHTML(arr){
-  return '<div class="dots">'+arr.map(d=>{
-    let c = "dot";
-    if(d==="done") c+=" done";
-    else if(d==="due") c+=" due";
-    else if(d==="call") c+=" call";
-    return '<span class="'+c+'"></span>';
-  }).join('')+'</div>';
+let selected=null; const logs={};
+const BUCKETS=[
+  {key:'call', title:'Call now', cls:'b-red', icon:'📞'},
+  {key:'approve', title:'Drafts to approve', cls:'b-blue', icon:'✦'},
+  {key:'callback', title:'Callbacks', cls:'b-grape', icon:'⏱'},
+];
+function priorityTag(cat){return cat.replace(/-/g,' ');}
+function renderQueue(){
+  const q=document.getElementById('queue'); q.innerHTML='';
+  const due=leads.filter(l=>l.bucket!=='done').length;
+  document.getElementById('dueCount').textContent=due+' due';
+  let any=false;
+  BUCKETS.forEach(b=>{
+    const items=leads.filter(l=>l.bucket===b.key);
+    if(!items.length) return; any=true;
+    const sec=document.createElement('div'); sec.className='section';
+    sec.innerHTML=`<div class="lbl"><span>${b.icon}</span> ${b.title} <span class="badge ${b.cls}">${items.length}</span></div>`;
+    items.forEach(l=>{
+      const row=document.createElement('div');
+      row.className='row'+(selected&&selected.id===l.id?' sel':'');
+      row.innerHTML=`<span class="tag">${priorityTag(l.cat)}</span>
+        <div class="grow"><div class="nm">${l.name}</div><div class="sub">${l.role} · ${l.co}</div></div>
+        <span class="when" style="color:${l.when.includes('m')||l.when==='now'?'var(--red)':'var(--muted)'}">${l.when}</span>`;
+      row.onclick=()=>{selected=l; render();};
+      sec.appendChild(row);
+    });
+    q.appendChild(sec);
+  });
+  if(!any) q.innerHTML='<div class="empty">Queue clear. New positive replies show up here automatically.</div>';
 }
-
-function renderList(){
-  const el = document.getElementById('leadlist');
-  el.innerHTML = leads.map(l=>`
-    <div class="lead ${l.id===current?'active':''}" onclick="select(${l.id})">
-      <div class="r1">
-        <span><span class="tag ${catClass[l.cat]}">${catLabel[l.cat]}</span> <span class="nm">${l.name}</span></span>
-        <span class="tm">${l.due}</span>
-      </div>
-      <div class="r2">${l.channel} · ${l.company}</div>
-      ${dotsHTML(l.dots)}<span class="chan">${l.channel.toLowerCase().includes('call')?'call due':l.channel.toLowerCase()} · touch ${l.touch}</span>
-    </div>`).join('');
-}
-
-function renderThread(l){
-  document.getElementById('threadhead').innerHTML = `Conversation <span class="sub" id="threadsub">${l.name} · ${l.company}</span>`;
-  document.getElementById('threadwrap').innerHTML = l.thread.map(m=>{
-    if(m.day) return `<div class="daysep">${m.day}</div>`;
-    return `<div class="msg ${m.dir==='out'?'out':'in'}"><div class="who">${m.who}</div>${m.text}</div>`;
-  }).join('');
-}
-
-function renderDetails(l){
-  const el = document.getElementById('details');
-  el.innerHTML = `
-    <div class="section">
-      <div class="person">
-        <div class="avatar">${l.name.split(' ').map(n=>n[0]).join('')}</div>
-        <div>
-          <div style="font-weight:700;font-size:15px">${l.name}</div>
-          <div style="color:var(--muted)">${l.title} · ${l.company}</div>
+function renderDetail(){
+  const d=document.getElementById('detail');
+  if(!selected){d.innerHTML='<div class="placeholder">Pick a lead from the queue to open the Call Bar.</div>';return;}
+  const l=selected; const booked=(logs[l.id]||[]).some(x=>x.includes('Booked'));
+  d.innerHTML=`
+    <div class="dhead"><div class="nm">${l.name}</div><div class="sub">${l.co} · ${l.client} · <span class="badge b-gray">${priorityTag(l.cat)}</span></div></div>
+    <div class="callbar">
+      <div class="cb-top">📞 Call Bar <span class="badge b-red" style="margin-left:8px">replied ${l.when} ago</span></div>
+      <div class="cb-body">
+        <div class="phone">☎ <span class="num">${l.phone}</span><button class="btn btn-call" onclick="act('Dialed — ringing…')">Call now</button></div>
+        <div class="script"><span class="k">say this (auto-filled)</span>${OPENER(l)}</div>
+        <div class="chips">
+          <span class="chip booked" onclick="act('Booked — meeting set')">booked</span>
+          <span class="chip" onclick="act('No answer + voicemail')">no answer + vm</span>
+          <span class="chip" onclick="act('No answer')">no answer</span>
+          <span class="chip" onclick="act('Bad number')">bad number</span>
+          <span class="chip" onclick="act('Call back later')">call back</span>
+          <span class="chip dnc" onclick="act('Do not call — phone DNC')">don't call</span>
         </div>
+        <div class="track">📋 touch ${l.touch} of 5 <span class="dots">${[1,2,3,4,5].map(n=>`<i class="${n<=l.touch?'on':''}"></i>`).join('')}</span><span style="margin-left:auto">next: ${l.bucket==='callback'?l.when+' callback':'auto-scheduled'}</span></div>
       </div>
     </div>
-    <div class="section">
-      <div class="kv"><span class="k">Category</span><span><span class="tag ${catClass[l.cat]}">${catLabel[l.cat]}</span></span></div>
-      <div class="kv"><span class="k">Phone</span><span>${l.phone}</span></div>
-      <div class="kv"><span class="k">Email</span><span>${l.email}</span></div>
-      <div class="kv"><span class="k">Touch</span><span>#${l.touch} in Connect Play</span></div>
-      <div class="kv"><span class="k">Next action</span><span>${l.channel} · ${l.due}</span></div>
-    </div>
-    <div class="section">
-      <div class="sectitle">Why this is up</div>
-      <div style="font-size:13px;line-height:1.5;color:#33363d">${l.summary}</div>
-    </div>
-
-    <div class="callpanel">
-      <div class="cp-head">
-        <div class="t">📞 Call Bar <span class="badge">${l.temp==='hot'?'hot':'warm'}</span></div>
-        <div class="badge">${l.callbackAt? 'callback '+l.callbackAt : 'due '+l.due}</div>
-      </div>
-      <div class="cp-body">
-        <div class="cp-script">${l.script}</div>
-        <div class="cp-grounded">🧠 Gong-grounded call script · generated from this lead's reply + history</div>
-        <div class="cp-fields">
-          <div class="f"><div class="l">Disposition</div><div class="v">— set after call —</div></div>
-          <div class="f"><div class="l">Outcome</div><div class="v">Book / Callback / DNC</div></div>
-        </div>
-        <div class="cp-actions">
-          <button class="btn call" onclick="alert('Dialer is disabled in the static demo')">${l.cta}</button>
-          <button class="btn ghost" onclick="alert('Logged a callback (demo)')">Callback</button>
-        </div>
-      </div>
-    </div>
-    <div class="note">Lead sheet stays gated until a “booked” disposition. Every action logs to the notes timeline.</div>
-  `;
+    <div class="ls ${booked?'unlocked':''}">${booked?'✓ Lead sheet unlocked — ready to send to client':'🔒 Send lead sheet — unlocks when disposition = booked'}</div>
+    <div class="log"><div class="t">Activity (auto-logged)</div>${((logs[l.id]||[]).length?logs[l.id]:['No actions yet']).map(x=>`<div class="item">${x}</div>`).join('')}</div>`;
 }
-
-let current = 1;
-function select(id){
-  current = id;
-  const l = leads.find(x=>x.id===id);
-  renderList(); renderThread(l); renderDetails(l);
+function act(msg){
+  if(!selected) return;
+  const l=selected, t=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  logs[l.id]=logs[l.id]||[]; logs[l.id].unshift(`${t} — ${msg}`);
+  if(msg.startsWith('Booked')){l.bucket='done';}
+  if(msg.startsWith('Do not call')){l.bucket='done';}
+  render();
 }
-
-renderList();
-select(1);
+function render(){renderQueue();renderDetail();}
+render();
 </script>
 </body>
 </html>
