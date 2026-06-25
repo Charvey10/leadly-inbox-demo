@@ -1,0 +1,1 @@
+const s=t=>!t||!t.trim()?!0:t.split(",").map(e=>e.trim()).filter(e=>e.length>0).length>0,i=t=>t?t.split(",").map(e=>e.trim()).every(e=>e.length>0):!0,a=t=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(t);export{i as a,a as i,s as v};

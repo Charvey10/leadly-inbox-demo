@@ -1,157 +1,18 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Leadly Inbox — Today Queue (Connect Play) demo</title>
-<style>
-  :root{--bg:#fff;--ink:#1f2328;--muted:#656d76;--line:#d0d7de;--blue:#0969da;--blueb:#dbeafe;--red:#cf222e;--redb:#ffebe9;--green:#1a7f37;--greenb:#dafbe1;--grape:#8250df;--grapeb:#f3e8ff;--soft:#f6f8fa;}
-  *{box-sizing:border-box;}
-  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--soft);}
-  .topbar{height:52px;background:#24292f;color:#fff;display:flex;align-items:center;gap:12px;padding:0 18px;font-weight:600;font-size:15px;}
-  .topbar .dot{width:22px;height:22px;border-radius:6px;background:#8250df;display:inline-flex;align-items:center;justify-content:center;font-size:13px;}
-  .topbar .pill{margin-left:auto;background:#373e47;color:#adbac7;font-size:12px;font-weight:500;padding:3px 10px;border-radius:20px;}
-  .wrap{display:flex;height:calc(100vh - 52px);}
-  .col{overflow-y:auto;}
-  .queue{width:46%;border-right:1px solid var(--line);background:#fff;}
-  .detail{flex:1;background:#fff;}
-  .qhead{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;position:sticky;top:0;background:#fff;}
-  .qhead h1{font-size:16px;margin:0;}
-  .badge{font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;}
-  .b-red{background:var(--redb);color:var(--red);}
-  .b-blue{background:var(--blueb);color:var(--blue);}
-  .b-grape{background:var(--grapeb);color:var(--grape);}
-  .b-gray{background:#eaeef2;color:#656d76;}
-  .b-green{background:var(--greenb);color:var(--green);}
-  .section{padding:8px 18px 4px;}
-  .section .lbl{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin:10px 0 6px;}
-  .row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #eaeef2;border-radius:8px;margin-bottom:7px;cursor:pointer;transition:.12s;}
-  .row:hover{background:var(--soft);border-color:var(--line);}
-  .row.sel{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue);}
-  .row .nm{font-weight:600;font-size:14px;}
-  .row .sub{font-size:12px;color:var(--muted);}
-  .row .grow{flex:1;min-width:0;}
-  .tag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;border:1px solid var(--line);color:var(--muted);white-space:nowrap;}
-  .when{font-size:12px;font-weight:600;}
-  .empty{color:var(--muted);font-size:13px;text-align:center;padding:40px 10px;}
-  /* detail */
-  .dhead{padding:16px 22px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;}
-  .dhead .nm{font-size:18px;font-weight:700;}
-  .dhead .sub{color:var(--muted);font-size:13px;margin-top:2px;}
-  .callbar{margin:18px 22px;border:1px solid var(--line);border-radius:12px;overflow:hidden;}
-  .cb-top{background:var(--soft);padding:10px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);font-size:13px;}
-  .cb-body{padding:16px;}
-  .phone{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
-  .phone .num{font-size:17px;font-weight:700;}
-  .btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 16px;font-size:14px;font-weight:600;cursor:pointer;}
-  .btn-call{background:var(--blue);color:#fff;border-color:var(--blue);margin-left:auto;}
-  .btn-call:hover{background:#0860ca;}
-  .script{background:var(--soft);border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.55;margin-bottom:14px;}
-  .script .k{font-size:11px;color:var(--muted);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px;}
-  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:6px;}
-  .chip{font-size:12px;font-weight:600;padding:6px 11px;border-radius:7px;border:1px solid var(--line);background:#fff;cursor:pointer;}
-  .chip:hover{background:var(--soft);}
-  .chip.booked{background:var(--greenb);color:var(--green);border-color:#a7e3b8;}
-  .chip.dnc{background:var(--redb);color:var(--red);border-color:#ffc1bc;}
-  .track{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px;margin-top:4px;}
-  .dots{display:flex;gap:4px;}
-  .dots i{width:8px;height:8px;border-radius:50%;background:#d0d7de;display:inline-block;}
-  .dots i.on{background:var(--blue);}
-  .ls{display:flex;align-items:center;gap:8px;background:var(--soft);border:1px dashed var(--line);border-radius:8px;padding:9px 13px;font-size:13px;color:var(--muted);margin:0 22px 18px;}
-  .ls.unlocked{background:var(--greenb);border-color:#a7e3b8;color:var(--green);border-style:solid;}
-  .log{margin:0 22px 24px;}
-  .log .t{font-size:13px;font-weight:600;margin-bottom:6px;}
-  .log .item{font-size:12px;color:var(--muted);padding:5px 0;border-top:1px solid #eaeef2;}
-  .placeholder{color:var(--muted);font-size:14px;text-align:center;padding:80px 20px;}
-  .footer{font-size:11px;color:var(--muted);text-align:center;padding:10px;}
-</style>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/leadly-inbox-demo/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeadlyPro Dashboard</title>
+  <script type="module" crossorigin src="/leadly-inbox-demo/assets/index-BxcObPYx.js"></script>
+  <link rel="stylesheet" crossorigin href="/leadly-inbox-demo/assets/index-C-8vCjMs.css">
 </head>
+
 <body>
-<div class="topbar"><span class="dot">L</span> Leadly Inbox <span class="pill">demo · Connect Play</span></div>
-<div class="wrap">
-  <div class="col queue">
-    <div class="qhead"><h1>Today</h1><span class="badge b-red" id="dueCount">0 due</span><span style="margin-left:auto;font-size:11px;color:var(--muted)">live demo · mock data</span></div>
-    <div id="queue"></div>
-  </div>
-  <div class="col detail" id="detail">
-    <div class="placeholder">Pick a lead from the queue to open the Call Bar.</div>
-  </div>
-</div>
-<div class="footer">Self-contained demo of the Today task queue. No backend — sample data only.</div>
-<script>
-const OPENER = (l)=>`"Hi ${l.first}, it's Mike with ${l.client} — I work alongside ${l.persona}, who you've been emailing about ${l.topic}. I run the calls on our side, so I figured I'd catch you live. Got two minutes?"`;
-let leads = [
-  {id:1, bucket:'call', cat:'power', first:'Ron', name:'Ron Williams', co:'Fort Wayne Neuro', client:'Aries', persona:'Sarah', topic:'shipper outreach', phone:'+1 260 420 5337', role:'Call', when:'now', touch:1},
-  {id:2, bucket:'call', cat:'meeting-ready', first:'Kristen', name:'Kristen Boice', co:'Pathways to Healing', client:'BTL', persona:'Grace', topic:'the showcase', phone:'+1 317 316 3077', role:'Call · touch 2', when:'4m', touch:2},
-  {id:3, bucket:'approve', cat:'pricing', first:'Kyra', name:'Kyra Contreras', co:'Salt Counseling', client:'BTL', persona:'Grace', topic:'pricing', phone:'+1 317 500 4539', role:'Proof email (E2) — from Grace', when:'now', touch:3},
-  {id:4, bucket:'approve', cat:'information', first:'Travis', name:'Travis Hatch', co:'Hatch Fulfillment', client:'Hatch', persona:'Sarah', topic:'fulfillment', phone:'+1 801 555 0142', role:'Text — from Mike', when:'12m', touch:2},
-  {id:5, bucket:'callback', cat:'power', first:'Devyn', name:'Devyn Gillespie', co:'3PL Bridge', client:'Aries', persona:'Sarah', topic:'outbound', phone:'+1 602 555 0199', role:'Scheduled call', when:'4:30pm', touch:1},
-];
-let selected=null; const logs={};
-const BUCKETS=[
-  {key:'call', title:'Call now', cls:'b-red', icon:'📞'},
-  {key:'approve', title:'Drafts to approve', cls:'b-blue', icon:'✦'},
-  {key:'callback', title:'Callbacks', cls:'b-grape', icon:'⏱'},
-];
-function priorityTag(cat){return cat.replace(/-/g,' ');}
-function renderQueue(){
-  const q=document.getElementById('queue'); q.innerHTML='';
-  const due=leads.filter(l=>l.bucket!=='done').length;
-  document.getElementById('dueCount').textContent=due+' due';
-  let any=false;
-  BUCKETS.forEach(b=>{
-    const items=leads.filter(l=>l.bucket===b.key);
-    if(!items.length) return; any=true;
-    const sec=document.createElement('div'); sec.className='section';
-    sec.innerHTML=`<div class="lbl"><span>${b.icon}</span> ${b.title} <span class="badge ${b.cls}">${items.length}</span></div>`;
-    items.forEach(l=>{
-      const row=document.createElement('div');
-      row.className='row'+(selected&&selected.id===l.id?' sel':'');
-      row.innerHTML=`<span class="tag">${priorityTag(l.cat)}</span>
-        <div class="grow"><div class="nm">${l.name}</div><div class="sub">${l.role} · ${l.co}</div></div>
-        <span class="when" style="color:${l.when.includes('m')||l.when==='now'?'var(--red)':'var(--muted)'}">${l.when}</span>`;
-      row.onclick=()=>{selected=l; render();};
-      sec.appendChild(row);
-    });
-    q.appendChild(sec);
-  });
-  if(!any) q.innerHTML='<div class="empty">Queue clear. New positive replies show up here automatically.</div>';
-}
-function renderDetail(){
-  const d=document.getElementById('detail');
-  if(!selected){d.innerHTML='<div class="placeholder">Pick a lead from the queue to open the Call Bar.</div>';return;}
-  const l=selected; const booked=(logs[l.id]||[]).some(x=>x.includes('Booked'));
-  d.innerHTML=`
-    <div class="dhead"><div class="nm">${l.name}</div><div class="sub">${l.co} · ${l.client} · <span class="badge b-gray">${priorityTag(l.cat)}</span></div></div>
-    <div class="callbar">
-      <div class="cb-top">📞 Call Bar <span class="badge b-red" style="margin-left:8px">replied ${l.when} ago</span></div>
-      <div class="cb-body">
-        <div class="phone">☎ <span class="num">${l.phone}</span><button class="btn btn-call" onclick="act('Dialed — ringing…')">Call now</button></div>
-        <div class="script"><span class="k">say this (auto-filled)</span>${OPENER(l)}</div>
-        <div class="chips">
-          <span class="chip booked" onclick="act('Booked — meeting set')">booked</span>
-          <span class="chip" onclick="act('No answer + voicemail')">no answer + vm</span>
-          <span class="chip" onclick="act('No answer')">no answer</span>
-          <span class="chip" onclick="act('Bad number')">bad number</span>
-          <span class="chip" onclick="act('Call back later')">call back</span>
-          <span class="chip dnc" onclick="act('Do not call — phone DNC')">don't call</span>
-        </div>
-        <div class="track">📋 touch ${l.touch} of 5 <span class="dots">${[1,2,3,4,5].map(n=>`<i class="${n<=l.touch?'on':''}"></i>`).join('')}</span><span style="margin-left:auto">next: ${l.bucket==='callback'?l.when+' callback':'auto-scheduled'}</span></div>
-      </div>
-    </div>
-    <div class="ls ${booked?'unlocked':''}">${booked?'✓ Lead sheet unlocked — ready to send to client':'🔒 Send lead sheet — unlocks when disposition = booked'}</div>
-    <div class="log"><div class="t">Activity (auto-logged)</div>${((logs[l.id]||[]).length?logs[l.id]:['No actions yet']).map(x=>`<div class="item">${x}</div>`).join('')}</div>`;
-}
-function act(msg){
-  if(!selected) return;
-  const l=selected, t=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-  logs[l.id]=logs[l.id]||[]; logs[l.id].unshift(`${t} — ${msg}`);
-  if(msg.startsWith('Booked')){l.bucket='done';}
-  if(msg.startsWith('Do not call')){l.bucket='done';}
-  render();
-}
-function render(){renderQueue();renderDetail();}
-render();
-</script>
+  <div id="root"></div>
+  <script src="https://cdn.platform.openai.com/deployments/chatkit/chatkit.js" async></script>
 </body>
+
 </html>
